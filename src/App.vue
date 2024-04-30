@@ -24,7 +24,9 @@
         :style="'background-color:' + item"
         class="div12"
         @click="cclier(item)"
-      ></div>
+      >
+        {{ colorClass[item].slice(2,-2) }}
+      </div>
     </div>
     <!-- svg -->
     <div id="svg-dialog__body">
@@ -71,6 +73,7 @@ export default {
         "rgb(255,255,0)",
         "rgb(128,128,128)",
         "rgb(0,0,139)",
+        "rgb(185,72,66)",
       ],
       // 选中的线条
       newSelectedLines: [],
@@ -95,6 +98,7 @@ export default {
         "rgb(255,255,0)": "kv35kV",
         "rgb(128,128,128)": "kv0kV",
         "rgb(0,0,139)": "kv6kV",
+        "rgb(185,72,66)": "kv10kV",
       },
       svgDoc: "",
     };
@@ -452,6 +456,10 @@ export default {
   height: 3vh;
   border: 1px solid;
   cursor: pointer;
+  color: #fff;
+  font-size: 1vh;
+  text-align: center;
+  word-wrap: break-word;
 }
 .selection-box {
   z-index: 9;
