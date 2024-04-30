@@ -1,19 +1,8 @@
-# svg
+# 快速修改svg文件
 
-## Project setup
-```
-npm install
-```
-
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## 使用方式
+1. 导入svg
+2. 基础修改（删除引入的图片，修改背景颜色，删除多余文本）
+3. 框选需要修改的内容。点击需要修改的颜色
+4. 可以修改名称
+5. 导出修改后的svg。
