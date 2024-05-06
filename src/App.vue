@@ -25,7 +25,12 @@
         class="div12"
         @click="cclier(item)"
       >
-        {{ colorClass[item].slice(2,-2) }}
+        {{ colorClass[item].slice(2, -2) }}
+      </div>
+      <div class="threeMode">
+        <div class="m0" @click="threea(0)"></div>
+        <div class="m1" @click="threea(1)"></div>
+        <div class="m2" @click="threea(2)"></div>
       </div>
     </div>
     <!-- svg -->
@@ -67,6 +72,7 @@ export default {
       endX: 0,
       endY: 0,
       selectedLines: [], // 存储选中线条的引用或ID
+      threeModel: [],
       colew: [
         "rgb(240,65,85)",
         "rgb(128,0,128)",
@@ -101,6 +107,7 @@ export default {
         "rgb(185,72,66)": "kv10kV",
       },
       svgDoc: "",
+      threemdoe: [],
     };
   },
   methods: {
@@ -116,16 +123,11 @@ export default {
       window.addEventListener("mousemove", this.updateSelecmove);
     },
     updateSelecmove(event) {
-      console.log(
-        "拖拽",
-        event.clientX - this.$refs.svgContainer.getBoundingClientRect().left
-      );
       this.endX =
         event.clientX - this.$refs.svgContainer.getBoundingClientRect().left;
       this.endY =
         event.clientY - this.$refs.svgContainer.getBoundingClientRect().top;
       // 根据startX, startY, endX, endY确定选中的线条，并更新selectedLines
-      console.log("弹起坐标：", this.endX, this.endY);
       const left = Math.min(this.startX, this.endX);
       const top = Math.min(this.startY, this.endY);
       const Mleft = Math.max(this.startX, this.endX);
@@ -133,7 +135,6 @@ export default {
 
       const width = Math.abs(this.endX - this.startX);
       const height = Math.abs(this.endY - this.startY);
-      console.log("选中的坐标：", left, top, Mleft, Mtop);
       this.selecFrame.selectionStyle.left = left + "px";
       this.selecFrame.selectionStyle.top = top + "px";
 
@@ -148,11 +149,8 @@ export default {
       const Mtop = Math.max(this.startY, this.endY);
       this.newSelectedLines = this.getIntersectingLines(left, top, Mleft, Mtop);
       this.newSelectedModel = this.getIntersectingmodel(left, top, Mleft, Mtop);
-
+      console.log("选中的内容", this.newSelectedLines, this.newSelectedModel);
       window.removeEventListener("mousemove", this.updateSelecmove);
-
-      // 绘制选中框
-      if (!this.selecFrame.isSelecting) return;
     },
     // 返回选中区域的线条
     getIntersectingLines(startX, startY, endX, endY) {
@@ -266,8 +264,19 @@ export default {
       }
       return intersectin;
     },
-    // 选中颜色 修改组件和线条
+    // 选中颜色 修改组件和线条``
     cclier(v) {
+      if (this.threemdoe.length > 0) {
+        // 修改三色组件
+        console.log('11112',this.threemdoe,this.colorClass[v])
+        this.threemdoe.map((val) => {
+          val.setAttribute("class", this.colorClass[v]);
+        });
+        console.log('选中',this.threemdoe)
+        this.threemdoe=[]
+        this.newSvgContent = new XMLSerializer().serializeToString(this.svgDoc);
+        return
+      }
       // 修改线条颜色
       this.newSelectedLines.forEach((lineId) => {
         lineId.setAttribute("stroke", v); // 改变选中线条的颜色
@@ -372,6 +381,23 @@ export default {
             ahref.forEach((v) => {
               v.removeAttribute("xlink:href");
             });
+            //  三色组件无法修改颜色。通过其他方式
+            const Model = this.svgDoc.querySelectorAll("use");
+            const threeColourModel = [];
+            Model.forEach(function (useElement) {
+              // 获取 xlink:href 属性的值
+              var xlinkHref = useElement.getAttributeNS(
+                "http://www.w3.org/1999/xlink",
+                "href"
+              );
+
+              // 检查 xlink:href 属性是否存在且以 #Transformer3: 开头
+              if (xlinkHref && xlinkHref.startsWith("#Transformer3:")) {
+                console.log(useElement.href.animVal);
+                threeColourModel.push(useElement);
+              }
+            });
+            this.threeModel = threeColourModel;
           });
         };
         reader.readAsText(file);
@@ -379,6 +405,15 @@ export default {
         alert("请选择一个有效的SVG文件");
       }
     },
+    // 修改三色组件
+    threea(v) {
+      this.threeModel.forEach((val) => {
+        if (val.href.animVal.slice(-1) == v) {
+          this.threemdoe.push(val)
+        }
+      });
+    },
+
     // 修改名称
     repName(filename) {
       // 移除前缀 "CD." 和后缀 ".fac"
@@ -481,6 +516,32 @@ export default {
   > * {
     font-size: 1.5vh;
     margin-right: 2vh;
+  }
+}
+.threeMode {
+  width: 3vh;
+  height: 3vh;
+  // border: 1px solid;
+  position: relative;
+  > div {
+    position: absolute;
+    border: 1px solid;
+    width: 2vh;
+    height: 2vh;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  > .m0 {
+    top: 0;
+    left: 25%;
+  }
+  > .m1 {
+    top: 50%;
+    left: 0;
+  }
+  > .m2 {
+    top: 50%;
+    left: 50%;
   }
 }
 </style>
