@@ -169,11 +169,12 @@ export default {
     },
     // 返回选中区域的线条
     getIntersectingLines(startX, startY, endX, endY) {
+      console.log("选中的线条", startX, startY, endX, endY);
       const intersectingLines = [];
       // 1. 拿到所有的线条
       const lines = this.svgDoc.querySelectorAll("path");
       // console.log('线条',lines)
-      // 定义一个函数来检查点是否在矩形内
+      // 定义一个函数来检查点是否在矩形内(希望可以不用全在框中，只要有一半区域在就行)
       function isPointInRect(x, y) {
         // console.log(x,y,startX,endX,startY,endY)
         return x >= startX && x <= endX && y >= startY && y <= endY;
@@ -229,10 +230,11 @@ export default {
         // 获取线段的两个端点坐标
         const pathData = line.getAttribute("d"); // 获取 d 属性
         const points = parsePath(pathData); // 解析路径并获取点
+        // console.log(points);
         // 检查线段的两个端点是否在矩形内
         if (
           isPointInRect(points.startX, points.startY) ||
-          isPointInRect(points.nextX, points.nextY)
+          isPointInRect(points.endX, points.endY)
         ) {
           return true; // 如果一个端点在矩形内，则线段与矩形相交
         }
