@@ -27,11 +27,19 @@
       >
         {{ colorClass[item].slice(2, -2) }}
       </div>
-      <div class="threeMode">
-        <div class="m0" @click="threea(0)"></div>
-        <div class="m1" @click="threea(1)"></div>
-        <div class="m2" @click="threea(2)"></div>
+      <span>线条颜色：</span>
+      <div
+        v-for="item in clomne"
+        :key="item"
+        :style="'background-color:' + item"
+        class="div12"
+        @click="cclier(item)"
+      >
       </div>
+      <svg style="width: 8vh; height: 8vh" xmlns="http://www.w3.org/2000/svg">
+        <g v-html="sanseSvg" id="sanId"></g>
+      </svg>
+      <!-- <div v-html="sanseSvg" ></div> -->
     </div>
     <!-- svg -->
     <div id="svg-dialog__body">
@@ -81,6 +89,12 @@ export default {
         "rgb(0,0,139)",
         "rgb(185,72,66)",
       ],
+      clomne: [
+        "rgb(0,0,255)",
+        "rgb(128,128,128)",
+        // "rgb(0,0,0)",
+        "rgb(0,255,255)",
+      ],
       // 选中的线条
       newSelectedLines: [],
       // 选中的组件
@@ -107,7 +121,8 @@ export default {
         "rgb(185,72,66)": "kv10kV",
       },
       svgDoc: "",
-      threemdoe: [],
+      sanseSvg: "",
+      sanseColor: "",
     };
   },
   methods: {
@@ -266,16 +281,46 @@ export default {
     },
     // 选中颜色 修改组件和线条``
     cclier(v) {
-      if (this.threemdoe.length > 0) {
+      console.log("选中颜色", v, this.sanseColor);
+      if (this.sanseColor) {
         // 修改三色组件
-        console.log('11112',this.threemdoe,this.colorClass[v])
-        this.threemdoe.map((val) => {
-          val.setAttribute("class", this.colorClass[v]);
+        console.log("11112", this.colorClass[v]);
+        // 修改svg组件中的颜色
+        this.threeModel.forEach((useElement) => {
+          // console.log(useElement)
+          // 获取 xlink:href 属性的值
+          var xlinkHref = useElement.getAttributeNS(
+            "http://www.w3.org/1999/xlink",
+            "href"
+          );
+
+          // 检查 xlink:href 属性是否存在且以 #Transformer3: 开头
+          if (xlinkHref && xlinkHref.startsWith(this.sanseColor)) {
+            console.log("发广告广告", useElement);
+            useElement.setAttribute("class", this.colorClass[v]);
+          }
         });
-        console.log('选中',this.threemdoe)
-        this.threemdoe=[]
         this.newSvgContent = new XMLSerializer().serializeToString(this.svgDoc);
-        return
+        // 修改顶部三色组件颜色
+        let circle = document.getElementById("sanId");
+        const alf = circle.querySelectorAll("use");
+        alf.forEach((useElement) => {
+          // console.log('租金',useElement)
+          // 获取 xlink:href 属性的值
+          var xlinkHref = useElement.getAttributeNS(
+            "http://www.w3.org/1999/xlink",
+            "href"
+          );
+
+          // 检查 xlink:href 属性是否存在且以 #Transformer3: 开头
+          if (xlinkHref && xlinkHref.startsWith(this.sanseColor)) {
+            // console.log('发广告广告',useElement);
+            useElement.setAttribute("class", this.colorClass[v]);
+          }
+        });
+        this.sanseColor = "";
+        // console.log(alf,'gggd')
+        return;
       }
       // 修改线条颜色
       this.newSelectedLines.forEach((lineId) => {
@@ -398,6 +443,34 @@ export default {
               }
             });
             this.threeModel = threeColourModel;
+
+            // 三、获取三色组件。显示到顶部，用于修改颜色
+            if (this.threeModel.length) {
+              const parent1 = this.threeModel[0].parentElement;
+              const parent2 = parent1 ? parent1.parentElement : null;
+              console.log("获取三色组件：", parent2);
+              var parent3 = parent2.cloneNode(true); // 深度克隆，包括所有子元素
+              const alf = parent3.querySelectorAll("use");
+              alf.forEach((v) => {
+                v.setAttribute("y", "50");
+                v.setAttribute("x", "50");
+                v.setAttribute("style", "pointer-events: bounding-box;");
+                v.setAttribute(
+                  "transform",
+                  "rotate(0,770,808) scale(1,1) translate(-50,-48)"
+                );
+              });
+              this.sanseSvg = new XMLSerializer().serializeToString(parent3);
+              // 添加点击事件监听器
+              var circle = document.getElementById("sanId");
+              var that = this;
+              circle.addEventListener("click", function (event) {
+                console.log("Circle clicked!", event.target.href.animVal);
+
+                that.sanseColor = event.target.href.animVal;
+                // console.log("三色组件颜色：", that);
+              });
+            }
           });
         };
         reader.readAsText(file);
@@ -405,15 +478,6 @@ export default {
         alert("请选择一个有效的SVG文件");
       }
     },
-    // 修改三色组件
-    threea(v) {
-      this.threeModel.forEach((val) => {
-        if (val.href.animVal.slice(-1) == v) {
-          this.threemdoe.push(val)
-        }
-      });
-    },
-
     // 修改名称
     repName(filename) {
       // 移除前缀 "CD." 和后缀 ".fac"
@@ -426,6 +490,10 @@ export default {
     },
     // 导出svg
     copeSvg() {
+      if(!this.newSvgContent){
+        alert('请先导入svg文件');
+        return
+      }
       // 创建一个Blob对象
       const blob = new Blob([this.newSvgContent], {
         type: "image/svg+xml;charset=utf-8",
@@ -495,6 +563,8 @@ export default {
   font-size: 1vh;
   text-align: center;
   word-wrap: break-word;
+  border: 1px solid #ccc;
+  margin-right: 0.4vw !important;
 }
 .selection-box {
   z-index: 9;
@@ -506,7 +576,7 @@ export default {
 }
 .topBUt {
   position: fixed;
-  height: 4vh;
+  height: 5vh;
   width: 100vw;
   top: 0;
   left: 0;
@@ -516,6 +586,10 @@ export default {
   > * {
     font-size: 1.5vh;
     margin-right: 2vh;
+  }
+  > input,
+  button {
+    height: 4vh !important;
   }
 }
 .threeMode {
