@@ -34,12 +34,13 @@
         :style="'background-color:' + item"
         class="div12"
         @click="cclier(item)"
-      >
+      ></div>
+      <div style="width: 5vh;height: 5vh;">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="width: 100%; height: 100%;"  xmlns="http://www.w3.org/2000/svg">
+          <defs v-html="sanseSvgSan" id="sanIdsan"></defs>
+          <g v-html="sanseSvg" id="sanId"></g>
+        </svg>
       </div>
-      <svg style="width: 8vh; height: 8vh" xmlns="http://www.w3.org/2000/svg">
-        <g v-html="sanseSvg" id="sanId"></g>
-      </svg>
-      <!-- <div v-html="sanseSvg" ></div> -->
     </div>
     <!-- svg -->
     <div id="svg-dialog__body">
@@ -54,7 +55,26 @@
           class="selection-box"
           :style="selecFrame.selectionStyle"
           v-if="selecFrame.isSelecting"
-        ></div>
+        >
+          <div class="topPO">
+            {{ Math.trunc(selecFrame.selectionStyle.left.split("px")[0]) }}x{{
+              Math.trunc(selecFrame.selectionStyle.top.split("px")[0])
+            }}
+          </div>
+          <div class="bottPO">
+            {{
+              Math.trunc(
+                +selecFrame.selectionStyle.left.split("px")[0] +
+                  +selecFrame.selectionStyle.width.split("px")[0]
+              )
+            }}x{{
+              Math.trunc(
+                +selecFrame.selectionStyle.top.split("px")[0] +
+                  +selecFrame.selectionStyle.height.split("px")[0]
+              )
+            }}
+          </div>
+        </div>
         <div v-if="svgContent" v-html="newSvgContent" id="svg-trigger"></div>
       </div>
     </div>
@@ -123,6 +143,7 @@ export default {
       svgDoc: "",
       sanseSvg: "",
       sanseColor: "",
+      sanseSvgSan: "",
     };
   },
   methods: {
@@ -399,7 +420,6 @@ export default {
       elements5.forEach((element) => {
         // 获取stroke属性的内容
         element.setAttribute("stroke", "");
-        // const dAttributeContent = v.getAttribute("stroke");
       });
       this.newSvgContent = new XMLSerializer().serializeToString(this.svgDoc);
     },
@@ -440,7 +460,6 @@ export default {
 
               // 检查 xlink:href 属性是否存在且以 #Transformer3: 开头
               if (xlinkHref && xlinkHref.startsWith("#Transformer3:")) {
-                console.log(useElement.href.animVal);
                 threeColourModel.push(useElement);
               }
             });
@@ -467,11 +486,31 @@ export default {
               var circle = document.getElementById("sanId");
               var that = this;
               circle.addEventListener("click", function (event) {
-                console.log("Circle clicked!", event.target.href.animVal);
+                // console.log("Circle clicked!", event.target.href.animVal);
 
                 that.sanseColor = event.target.href.animVal;
                 // console.log("三色组件颜色：", that);
               });
+              // 添加href的索引
+              // console.log("samwweo", threeColourModel);
+              const symbolModel = this.svgDoc.querySelectorAll("symbol");
+              const symbolModelArr = [];
+              symbolModel.forEach(function (useElement) {
+                // 检查 xlink:href 属性是否存在且以 #Transformer3: 开头
+                if (
+                  useElement.id &&
+                  useElement.id.startsWith("Transformer3:")
+                ) {
+                  // console.log("useElement", useElement);
+                  symbolModelArr.push(useElement);
+                }
+              });
+              // const dafs=new XMLSerializer()
+              // this.sanseSvgSan = dafs.serializeToString(
+              //   symbolModelArr
+              // );
+              // console.log("symbolModelArr", symbolModelArr);
+              // console.log("this.sanseSvgSan", this.sanseSvgSan);
             }
           });
         };
@@ -492,9 +531,9 @@ export default {
     },
     // 导出svg
     copeSvg() {
-      if(!this.newSvgContent){
-        alert('请先导入svg文件');
-        return
+      if (!this.newSvgContent) {
+        alert("请先导入svg文件");
+        return;
       }
       // 创建一个Blob对象
       const blob = new Blob([this.newSvgContent], {
@@ -507,7 +546,7 @@ export default {
       // 创建一个链接元素
       const link = document.createElement("a");
       link.href = url;
-      link.download = this.repName(this.Svgname); // 设置下载的文件名
+      link.download = this.Svgname; // 设置下载的文件名
 
       // 触发下载
       document.body.appendChild(link);
@@ -548,7 +587,7 @@ export default {
   // height: 900px;
   width: 100%;
   position: relative;
-  margin-top: 4vh;
+  margin-top: 5vh;
   #svg-trigger {
     position: absolute;
     top: 0;
@@ -569,8 +608,20 @@ export default {
   margin-right: 0.4vw !important;
 }
 .selection-box {
+  position: relative;
   z-index: 9;
   pointer-events: none; /* 防止选中框影响鼠标事件 */
+  color: #fff;
+  .topPO {
+    position: absolute;
+    top: -23px;
+    left: 0;
+  }
+  .bottPO {
+    position: absolute;
+    bottom: -20px;
+    right: -60px;
+  }
 }
 .basicsXiu {
   width: 5vw;
@@ -585,6 +636,8 @@ export default {
   z-index: 99;
   background-color: #fff;
   display: flex;
+  align-items: center;
+  padding-left: 0.4vw;
   > * {
     font-size: 1.5vh;
     margin-right: 2vh;
