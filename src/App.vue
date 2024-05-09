@@ -35,11 +35,34 @@
         class="div12"
         @click="cclier(item)"
       ></div>
-      <div style="width: 5vh;height: 5vh;">
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="width: 100%; height: 100%;"  xmlns="http://www.w3.org/2000/svg">
-          <defs v-html="sanseSvgSan" id="sanIdsan"></defs>
+      <div style="width: 20vh; height: 5vh">
+        <svg
+          viewBox="0 0 100 100"
+          style="width: 100%; height: 100%"
+          xmlns="http://www.w3.org/2000/svg"
+          id="sanIdsan"
+        >
           <g v-html="sanseSvg" id="sanId"></g>
         </svg>
+      </div>
+      <!-- 使用方法 -->
+      <div class="warn div12">
+        <span>!</span>
+        <div class="poale">
+          <h3>提示：</h3>
+          <p>可能引入svg的时候显示的内容与真实内容不一样，代码问题</p>
+          <p>如果出现框选内容与修改内容不符，是svg的图层坐标轴对不上的原因，暂时无解</p>
+          <p>三个圈或者两个圈的组件位置与svg中实际看到的不一样，暂时无解</p>
+          <p><b>注：导出的文件会默认删除所有a标签的跳转地址，会删除所有的image。会删除所有的组件颜色。</b></p>
+          <h3>操作方式</h3>
+          <p>1. 引入svg文件，先点击简易修改</p>
+          <p>2. 鼠标在svg中框选需要修改的内容，然后点击左侧的颜色</p>
+          <p>3. 需要修改单独的线条可以选择右侧的颜色。</p>
+          <p>4. 右侧顶部的三个圈或者两个圈组件，选中圈，然后选中左侧的颜色，可以修改圈的颜色</p>
+          <p>5. 修改文件名，导出svg</p>
+          <h3>github：</h3>
+          <p>https://github.com/zhujun-max/amend-svg</p>
+        </div>
       </div>
     </div>
     <!-- svg -->
@@ -158,6 +181,7 @@ export default {
       this.selecFrame.isSelecting = true;
       window.addEventListener("mousemove", this.updateSelecmove);
     },
+    // 鼠标移动，绘制选中框
     updateSelecmove(event) {
       this.endX =
         event.clientX - this.$refs.svgContainer.getBoundingClientRect().left;
@@ -177,7 +201,7 @@ export default {
       this.selecFrame.selectionStyle.width = width + "px";
       this.selecFrame.selectionStyle.height = height + "px";
     },
-    // 弹起坐标：
+    // 弹起坐标，结束绘制框监听
     updateSelection(event) {
       const left = Math.min(this.startX, this.endX);
       const top = Math.min(this.startY, this.endY);
@@ -194,10 +218,8 @@ export default {
       const intersectingLines = [];
       // 1. 拿到所有的线条
       const lines = this.svgDoc.querySelectorAll("path");
-      // console.log('线条',lines)
-      // 定义一个函数来检查点是否在矩形内(希望可以不用全在框中，只要有一半区域在就行)
+      // 定义一个函数来检查点是否在矩形内(可以不用全在框中，只要有一半区域在就行)
       function isPointInRect(x, y) {
-        // console.log(x,y,startX,endX,startY,endY)
         return x >= startX && x <= endX && y >= startY && y <= endY;
       }
       // 返回线条的起点和终点坐标
@@ -271,6 +293,7 @@ export default {
 
       return intersectingLines;
     },
+    // 返回选中的组件
     getIntersectingmodel(startX, startY, endX, endY) {
       const intersectin = [];
       // 1. 拿到所有的线条
@@ -301,63 +324,6 @@ export default {
         }
       }
       return intersectin;
-    },
-    // 选中颜色 修改组件和线条``
-    cclier(v) {
-      console.log("选中颜色", v, this.sanseColor);
-      if (this.sanseColor) {
-        // 修改三色组件
-        console.log("11112", this.colorClass[v]);
-        // 修改svg组件中的颜色
-        this.threeModel.forEach((useElement) => {
-          // console.log(useElement)
-          // 获取 xlink:href 属性的值
-          var xlinkHref = useElement.getAttributeNS(
-            "http://www.w3.org/1999/xlink",
-            "href"
-          );
-
-          // 检查 xlink:href 属性是否存在且以 #Transformer3: 开头
-          if (xlinkHref && xlinkHref.startsWith(this.sanseColor)) {
-            console.log("发广告广告", useElement);
-            useElement.setAttribute("class", this.colorClass[v]);
-          }
-        });
-        this.newSvgContent = new XMLSerializer().serializeToString(this.svgDoc);
-        // 修改顶部三色组件颜色
-        let circle = document.getElementById("sanId");
-        const alf = circle.querySelectorAll("use");
-        alf.forEach((useElement) => {
-          // console.log('租金',useElement)
-          // 获取 xlink:href 属性的值
-          var xlinkHref = useElement.getAttributeNS(
-            "http://www.w3.org/1999/xlink",
-            "href"
-          );
-
-          // 检查 xlink:href 属性是否存在且以 #Transformer3: 开头
-          if (xlinkHref && xlinkHref.startsWith(this.sanseColor)) {
-            // console.log('发广告广告',useElement);
-            useElement.setAttribute("class", this.colorClass[v]);
-          }
-        });
-        this.sanseColor = "";
-        // console.log(alf,'gggd')
-        return;
-      }
-      // 修改线条颜色
-      this.newSelectedLines.forEach((lineId) => {
-        lineId.setAttribute("stroke", v); // 改变选中线条的颜色
-      });
-      // 修改组件颜色
-      this.newSelectedModel.forEach((lineId) => {
-        lineId.setAttribute("class", this.colorClass[v]); // 改变选中线条的颜色
-      });
-      this.selecFrame = this.$options.data().selecFrame;
-
-      this.newSvgContent = new XMLSerializer().serializeToString(this.svgDoc);
-      this.newSelectedLines = [];
-      this.newSelectedModel = [];
     },
     // 基础修改
     basics() {
@@ -390,7 +356,6 @@ export default {
           }
         });
       });
-
       // 2.删除所有图片
       const elements2 = this.svgDoc.querySelectorAll("#Other_Layer>image");
       elements2.forEach((textElement) => {
@@ -416,13 +381,74 @@ export default {
       });
       // 5. 删除组件内的颜色
       const elements5 = this.svgDoc.querySelectorAll("defs>symbol>*");
-
+      // console.log("删除组件内颜色", elements5);
       elements5.forEach((element) => {
         // 获取stroke属性的内容
         element.setAttribute("stroke", "");
       });
+
+      // 6.删除可以跳转的标签
+      const hrefSkip = this.svgDoc.querySelectorAll("a");
+      hrefSkip.forEach((v) => {
+        v.removeAttribute("xlink:href");
+      });
       this.newSvgContent = new XMLSerializer().serializeToString(this.svgDoc);
     },
+    // 选中颜色 修改组件和线条。修改三色组件
+    cclier(v) {
+      if (this.sanseColor) {
+        // 修改三色组件
+        // 修改svg组件中的颜色
+        this.threeModel.forEach((useElement) => {
+          // console.log(useElement)
+          // 获取 xlink:href 属性的值
+          var xlinkHref = useElement.getAttributeNS(
+            "http://www.w3.org/1999/xlink",
+            "href"
+          );
+
+          // 检查 xlink:href 属性是否存在且以 #Transformer3: 开头
+          if (xlinkHref && xlinkHref.startsWith(this.sanseColor)) {
+            useElement.setAttribute("class", this.colorClass[v]);
+            // console.log("修改三色组件颜色", useElement);
+          }
+        });
+        this.newSvgContent = new XMLSerializer().serializeToString(this.svgDoc);
+        // 修改顶部三色组件颜色
+        let circle = document.getElementById("sanId");
+        const alf = circle.querySelectorAll("use");
+        alf.forEach((useElement) => {
+          // 获取 xlink:href 属性的值
+          var xlinkHref = useElement.getAttributeNS(
+            "http://www.w3.org/1999/xlink",
+            "href"
+          );
+
+          // 检查 xlink:href 属性是否存在且以 #Transformer3: 开头
+          if (xlinkHref && xlinkHref.startsWith(this.sanseColor)) {
+            // console.log("修改顶部组件的颜色", this.sanseColor, xlinkHref);
+            useElement.setAttribute("class", this.colorClass[v]);
+          }
+        });
+        this.sanseColor = "";
+      } else {
+        // 修改线条颜色
+        this.newSelectedLines.forEach((lineId) => {
+          lineId.setAttribute("stroke", v); // 改变选中线条的颜色
+        });
+        // 修改组件颜色
+        this.newSelectedModel.forEach((lineId) => {
+          lineId.setAttribute("class", this.colorClass[v]); // 改变选中线条的颜色
+        });
+        this.selecFrame = this.$options.data().selecFrame;
+
+        this.newSvgContent = new XMLSerializer().serializeToString(this.svgDoc);
+        this.newSelectedLines = [];
+        this.newSelectedModel = [];
+      }
+    },
+
+    // 文件input调用
     triggerFileUpload() {
       this.$refs.fileInput.click();
     },
@@ -430,6 +456,8 @@ export default {
     handleFileUpload(event) {
       const file = event.target.files[0];
       if (file && file.type === "image/svg+xml") {
+        // 只要引入文件，我就清除之前所有的记录
+        // this.$data = this.$options.data();
         const reader = new FileReader();
         this.Svgname = this.repName(file.name);
         reader.onload = (e) => {
@@ -443,75 +471,8 @@ export default {
               this.newSvgContent,
               "image/svg+xml"
             );
-            // 删除可以跳转的标签
-            const ahref = this.svgDoc.querySelectorAll("a");
-            ahref.forEach((v) => {
-              v.removeAttribute("xlink:href");
-            });
-            //  三色组件无法修改颜色。通过其他方式
-            const Model = this.svgDoc.querySelectorAll("use");
-            const threeColourModel = [];
-            Model.forEach(function (useElement) {
-              // 获取 xlink:href 属性的值
-              var xlinkHref = useElement.getAttributeNS(
-                "http://www.w3.org/1999/xlink",
-                "href"
-              );
-
-              // 检查 xlink:href 属性是否存在且以 #Transformer3: 开头
-              if (xlinkHref && xlinkHref.startsWith("#Transformer3:")) {
-                threeColourModel.push(useElement);
-              }
-            });
-            this.threeModel = threeColourModel;
-
-            // 三、获取三色组件。显示到顶部，用于修改颜色
-            if (this.threeModel.length) {
-              const parent1 = this.threeModel[0].parentElement;
-              const parent2 = parent1 ? parent1.parentElement : null;
-              console.log("获取三色组件：", parent2);
-              var parent3 = parent2.cloneNode(true); // 深度克隆，包括所有子元素
-              const alf = parent3.querySelectorAll("use");
-              alf.forEach((v) => {
-                v.setAttribute("y", "50");
-                v.setAttribute("x", "50");
-                v.setAttribute("style", "pointer-events: bounding-box;");
-                v.setAttribute(
-                  "transform",
-                  "rotate(0,770,808) scale(1,1) translate(-50,-48)"
-                );
-              });
-              this.sanseSvg = new XMLSerializer().serializeToString(parent3);
-              // 添加点击事件监听器
-              var circle = document.getElementById("sanId");
-              var that = this;
-              circle.addEventListener("click", function (event) {
-                // console.log("Circle clicked!", event.target.href.animVal);
-
-                that.sanseColor = event.target.href.animVal;
-                // console.log("三色组件颜色：", that);
-              });
-              // 添加href的索引
-              // console.log("samwweo", threeColourModel);
-              const symbolModel = this.svgDoc.querySelectorAll("symbol");
-              const symbolModelArr = [];
-              symbolModel.forEach(function (useElement) {
-                // 检查 xlink:href 属性是否存在且以 #Transformer3: 开头
-                if (
-                  useElement.id &&
-                  useElement.id.startsWith("Transformer3:")
-                ) {
-                  // console.log("useElement", useElement);
-                  symbolModelArr.push(useElement);
-                }
-              });
-              // const dafs=new XMLSerializer()
-              // this.sanseSvgSan = dafs.serializeToString(
-              //   symbolModelArr
-              // );
-              // console.log("symbolModelArr", symbolModelArr);
-              // console.log("this.sanseSvgSan", this.sanseSvgSan);
-            }
+            // 修改三色组件
+            this.sanseTop();
           });
         };
         reader.readAsText(file);
@@ -555,6 +516,157 @@ export default {
       // 清理
       URL.revokeObjectURL(url);
       document.body.removeChild(link);
+    },
+    // 获取三色组件，在顶部显示
+    sanseTop() {
+      // 一、获取Transformer3_Layer 组件
+      // 1。获取Transformer3_Layer 下所有组件
+      const sanseModel = this.svgDoc.querySelector("#Transformer3_Layer");
+      if (sanseModel) {
+        const sanseModelUse = sanseModel.querySelectorAll("use");
+        // 2. 筛选出不一样的组件，，
+        const useArr = [];
+        const useArrName = [];
+        sanseModelUse.forEach(function (v) {
+          // 只取不同的组件
+          if (v["href"]?.animVal.slice(-1) == "0") {
+            if (useArrName.length) {
+              if (!useArrName.includes(v["href"].animVal)) {
+                useArr.push(v);
+                useArrName.push(v["href"].animVal);
+              }
+            } else {
+              useArr.push(v);
+              useArrName.push(v["href"].animVal);
+            }
+          }
+        });
+        // console.log("useArr", useArr);
+        // 3. 渲染到顶部
+        var parent = [];
+        useArr.forEach((v, i) => {
+          const parent1 = v.parentElement;
+          const parent2 = parent1 ? parent1.parentElement : null;
+          const parent3 = parent2.cloneNode(true); // 深度克隆，包括所有子元素
+          parent.push(parent3);
+          const alf = parent3.querySelectorAll("use");
+          alf.forEach((v) => {
+            v.setAttribute("y", "50");
+            v.setAttribute("x", `${i * 100}`);
+            v.setAttribute("style", "pointer-events: bounding-box;");
+            v.setAttribute(
+              "transform",
+              "rotate(0,770,808) scale(1,1) translate(-50,-48)"
+            );
+          });
+        });
+      }
+      // 二、获取Transformer2_Layer
+      // 1。获取Transformer2_Layer 下所有组件
+      const sanseModel2 = this.svgDoc.querySelector("#Transformer2_Layer");
+      if (sanseModel2) {
+        const sanseModelUse2 = sanseModel2.querySelectorAll("use");
+        // 2. 筛选出不一样的组件，，
+        const useArr2 = [];
+        const useArrName2 = [];
+        sanseModelUse2.forEach(function (v) {
+          // 只取不同的组件
+          if (v["href"]?.animVal.slice(-1) == "0") {
+            if (useArrName2.length) {
+              if (!useArrName2.includes(v["href"].animVal)) {
+                useArr2.push(v);
+                useArrName2.push(v["href"].animVal);
+              }
+            } else {
+              useArr2.push(v);
+              useArrName2.push(v["href"].animVal);
+            }
+          }
+        });
+        // console.log("useArr", useArr2);
+        // 3. 渲染到顶部
+        useArr2.forEach((v, i) => {
+          const parent1 = v.parentElement;
+          const parent2 = parent1 ? parent1.parentElement : null;
+          const parent3 = parent2.cloneNode(true); // 深度克隆，包括所有子元素
+          parent.push(parent3);
+          const alf = parent3.querySelectorAll("use");
+          alf.forEach((v) => {
+            v.setAttribute("y", "50");
+            v.setAttribute("x", `${(i + useArr.length) * 80}`);
+            v.setAttribute("style", "pointer-events: bounding-box;");
+            v.setAttribute(
+              "transform",
+              "rotate(0,770,808) scale(1,1) translate(-50,-48)"
+            );
+          });
+        });
+      }
+      let wrapperElement = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "g"
+      );
+      parent.forEach((svgElement) => {
+        if (
+          svgElement instanceof Element &&
+          svgElement.namespaceURI === "http://www.w3.org/2000/svg"
+        ) {
+          wrapperElement.appendChild(svgElement);
+        }
+      });
+      let serializer = new XMLSerializer();
+      this.sanseSvg = serializer.serializeToString(wrapperElement);
+
+      // 监听点击事件
+      var circle = document.getElementById("sanId");
+      var that = this;
+      circle.addEventListener("click", function (event) {
+        that.sanseColor = event.target.href.animVal;
+      });
+
+      // 获取所有use元素。只需要threeModel。用于改变所有三色组件
+      const Model = this.svgDoc.querySelectorAll("use");
+      const threeColourModel = [];
+      Model.forEach(function (useElement) {
+        // 获取 xlink:href 属性的值
+        var xlinkHref = useElement.getAttributeNS(
+          "http://www.w3.org/1999/xlink",
+          "href"
+        );
+        // 检查 xlink:href 属性是否存在且以 #Transformer3: 开头
+        if (xlinkHref && xlinkHref.startsWith("#Transformer")) {
+          threeColourModel.push(useElement);
+        }
+      });
+      this.threeModel = threeColourModel;
+      // console.log("最后的内容", this.sanseSvg);
+
+      // 4.复制defs
+      const sourceDefs = this.svgDoc.querySelector("defs");
+      const clonedDefs = sourceDefs.cloneNode(true);
+      // console.log('clonedDefs',clonedDefs)
+      let clonedDefss = clonedDefs.querySelectorAll("symbol>*");
+      clonedDefss.forEach((element) => {
+        // 获取stroke属性的内容
+        element.setAttribute("stroke", "");
+      });
+      let targetSvg = document.getElementById("sanIdsan");
+      // 确保目标SVG有一个<defs>标签，如果没有则创建一个
+      let targetDefs = targetSvg.querySelector("defs");
+      if (!targetDefs) {
+        targetDefs = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "defs"
+        );
+        targetSvg.appendChild(targetDefs);
+      }
+      // console.log('创建sfg',targetSvg)
+      // 将复制的<defs>内容追加到目标SVG的<defs>标签中
+      // 注意：这里我们假设我们想要追加内容而不是替换它
+      // 如果需要替换，可以直接使用 targetDefs.replaceChild(clonedDefs, targetDefs.firstChild);
+      Array.from(clonedDefs.children).forEach(function (child) {
+        targetDefs.appendChild(child.cloneNode(true)); // 复制子元素而不是整个<defs>标签
+      });
     },
   },
 };
@@ -672,5 +784,38 @@ export default {
     top: 50%;
     left: 50%;
   }
+}
+.warn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  position: relative;
+  > span {
+    width: 50%;
+    color: #000;
+    height: 50%;
+    border: 1px solid #000;
+    border-radius: 50%;
+    font-size: 1.2vh;
+  }
+  .poale {
+    display: none;
+    position: absolute;
+    width: 40vw;
+    // height: 40vh;
+    background: #e9e9e9;
+    color: #000;
+    border: 1px solid #000;
+    border-radius: 0.7vh;
+    top: 0;
+    right: 0;
+    text-align: left;
+    padding: 1vh;
+  }
+}
+
+.warn:hover .poale {
+  display: block;
 }
 </style>
